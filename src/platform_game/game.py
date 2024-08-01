@@ -16,15 +16,25 @@ class Game:
         self.img_pos = [160, 260]
         self.movement = [False, False]  # [Up, Down]
 
+        self.collision_area = pygame.Rect(50, 50, 300, 50)
 
     def run(self):
         while self.running:
             self.screen.fill((14, 219, 248))  # Sky-color background
+
+            # hitbox of cloud
+            img_r = pygame.Rect(*self.img_pos, *self.img.get_size())
+            # Basic hitbox detection logic 
+            if img_r.colliderect(self.collision_area):
+                pygame.draw.rect(self.screen, (0, 100, 255), self.collision_area)
+            else:
+                pygame.draw.rect(self.screen, (0, 50, 155), self.collision_area)
+
             # Moves image based on key presses
             self.img_pos[1] += self.movement[1] - self.movement[0]
             # Blit draws source at destination (source, dest)
             self.screen.blit(self.img, self.img_pos)
-            
+
             for event in pygame.event.get():
                 # Exit window
                 if event.type == pygame.QUIT:
@@ -50,5 +60,6 @@ class Game:
         self.running = False
         pygame.quit()
         sys.exit()
+
 
 Game().run()
