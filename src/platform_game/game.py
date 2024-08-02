@@ -9,20 +9,22 @@ class Game:
         # pygame window set-up
         pygame.init()
         pygame.display.set_caption("Platform Game")
-        self.screen = pygame.display.set_mode((640, 480))
+        self.screen = pygame.display.set_mode((640, 480))  # Window
         self.clock = pygame.time.Clock()
         self.running = True
 
+        self.display = pygame.Surface((320, 240))  # Display to be upscaled
+
         self.movement = [False, False]  # [Left, Right]
         self.assets = {"player": load_image("entities/player.png")}
-        self.player = PhysicsEntity(self, "player", (100, 100), (8, 15))
+        self.player = PhysicsEntity(self, "player", (50, 50), (8, 15))
 
     def run(self):
         while self.running:
-            self.screen.fill((14, 219, 248))  # Sky-color background
+            self.display.fill((14, 219, 248))  # Sky-color background
 
             self.player.update((self.movement[1] - self.movement[0], 0))  # (x, y)
-            self.player.render(self.screen)
+            self.player.render(self.display)
 
             # # Blit draws source at destination (source, dest)
             # self.screen.blit(self.img, self.img_pos)
@@ -44,9 +46,13 @@ class Game:
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = False
 
+            # Render the upscaled display onto the game window 
+            self.screen.blit(
+                pygame.transform.scale(self.display, self.screen.get_size()), (0, 0) 
+            )
+
             pygame.display.update()
-            # 60 fps
-            self.clock.tick(60)
+            self.clock.tick(60)  # 60 FPS
 
     def quit(self):
         self.running = False
