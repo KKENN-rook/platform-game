@@ -18,5 +18,8 @@ class PhysicsEntity:
         self.pos[0] += frame_movement[0]  # Update X pos
         self.pos[1] += frame_movement[1]  # Update Y pos
 
+        # Gravity, min func to implement terminal velocity
+        self.velocity[1] = min(5, self.velocity[1] + 0.1)
+
     def render(self, surface):
         surface.blit(self.game.assets["player"], self.pos)

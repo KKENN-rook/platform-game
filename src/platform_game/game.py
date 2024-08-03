@@ -36,8 +36,7 @@ class Game:
             self.player.update((self.movement[1] - self.movement[0], 0))  # (x, y)
             self.player.render(self.display)
 
-            # # Blit draws source at destination (source, dest)
-            # self.screen.blit(self.img, self.img_pos)
+            print(self.tilemap.border_tiles(self.player.pos))
 
             for event in pygame.event.get():
                 # Exit window
