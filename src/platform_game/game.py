@@ -27,9 +27,10 @@ class Game:
             "player": load_image("entities/player.png"),
         }
 
-        self.movement = [False, False]  # [Left, Right]
         self.player = PhysicsEntity(self, "player", (50, 50), (8, 15))  # player is 8x15
         self.tilemap = Tilemap(self, tile_size=16)
+
+        self.movement = [False, False]  # [Left, Right]
 
     def run(self):
         """
@@ -54,6 +55,8 @@ class Game:
                         self.movement[0] = True
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = True
+                    if event.key == pygame.K_SPACE:
+                        self.player.velocity[1] = -3
                 # Key release
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
