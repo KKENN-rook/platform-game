@@ -24,7 +24,7 @@ class Game:
         }
 
         self.movement = [False, False]  # [Left, Right]
-        self.player = PhysicsEntity(self, "player", (50, 50), (8, 15))
+        self.player = PhysicsEntity(self, "player", (50, 50), (8, 15))  # player is 8x15
         self.tilemap = Tilemap(self, tile_size=16)
 
     def run(self):
@@ -33,10 +33,8 @@ class Game:
 
             self.tilemap.render(self.display)
 
-            self.player.update((self.movement[1] - self.movement[0], 0))  # (x, y)
+            self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))  # (x, y)
             self.player.render(self.display)
-
-            print(self.tilemap.border_tiles(self.player.pos))
 
             for event in pygame.event.get():
                 # Exit window
@@ -55,7 +53,7 @@ class Game:
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = False
 
-            # Render the display onto the screen and upscale it
+            # Upscale the display and render it on the screen 
             self.screen.blit(
                 pygame.transform.scale(self.display, self.screen.get_size()), (0, 0)
             )

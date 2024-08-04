@@ -1,3 +1,5 @@
+import pygame
+
 BORDERING_TILE_OFFSETS = [
     (-1, -1),
     (-1, 0),
@@ -9,6 +11,8 @@ BORDERING_TILE_OFFSETS = [
     (1, 0),
     (1, 1),
 ]
+
+PHYSICS_TILES = {"grass", "stone"}  # Tiles that physics will apply to
 
 
 class Tilemap:
@@ -33,6 +37,7 @@ class Tilemap:
             }
 
     def _render_tile(self, surface, tile, pos_multiplier=1):
+        """Helper function for render"""
         tile_type = tile["type"]
         tile_variant = tile["variant"]
         tile_pos_x = tile["pos"][0] * pos_multiplier
@@ -42,6 +47,7 @@ class Tilemap:
         surface.blit(tile_image, (tile_pos_x, tile_pos_y))
 
     def render(self, surface):
+        """Draws (blits) tiles onto a surface"""
         # Render offgrid tiles in the bg
         for tile in self.offgrid_tiles:
             self._render_tile(surface, tile, pos_multiplier=1)
@@ -52,7 +58,6 @@ class Tilemap:
 
     def border_tiles(self, pos):
         """Calculates and returns existing bordering tiles around current position"""
-
         # Current position x and y coordinates
         curr_x = int(pos[0] // self.tile_size)
         curr_y = int(pos[1] // self.tile_size)
@@ -64,3 +69,18 @@ class Tilemap:
             if border_tile in self.tilemap:
                 b_tiles.append(self.tilemap[border_tile])
         return b_tiles
+
+    def physics_create_rects(self, pos):
+        """Create Rect objects around tiles that have physics enabled around the pos"""
+        rects = []
+        for tile in self.border_tiles(pos):
+            if tile["type"] in PHYSICS_TILES:
+                rects.append(
+                    pygame.Rect(
+                        tile["pos"][0] * self.tile_size,  # x-pos 
+                        tile["pos"][1] * self.tile_size,  # y-pos
+                        self.tile_size,  # width
+                        self.tile_size,  # height
+                    )
+                )
+        return rects
