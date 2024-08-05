@@ -1,5 +1,6 @@
 import pygame
 
+
 class PhysicsEntity:
     def __init__(self, game, ent_type, pos, size):
         """
@@ -14,7 +15,9 @@ class PhysicsEntity:
         """
         self.game = game
         self.type = ent_type
-        self.pos = list(pos)  # Shallow copy list to ensure each entity has its own position
+        self.pos = list(
+            pos
+        )  # Shallow copy list to ensure each entity has its own position
         self.size = size
         self.velocity = [0, 0]  # Initial velocity (x, y)
         self.collisions = {"up": False, "down": False, "left": False, "right": False}
@@ -51,16 +54,16 @@ class PhysicsEntity:
         entity_rect = self.rect()
         for rect in tilemap.physics_create_rects(self.pos):
             if entity_rect.colliderect(rect):
-                # Moving Right 
+                # Moving Right
                 if frame_movement[0] > 0:
-                    entity_rect.right = rect.left  
-                    self.collisions['right'] = True
-                 # Moving Left
+                    entity_rect.right = rect.left
+                    self.collisions["right"] = True
+                # Moving Left
                 if frame_movement[0] < 0:
                     entity_rect.left = rect.right
-                    self.collisions['left'] = True
-                # Update position  
-                self.pos[0] = entity_rect.x 
+                    self.collisions["left"] = True
+                # Update position
+                self.pos[0] = entity_rect.x
 
         # Update the Y position
         self.pos[1] += frame_movement[1]
@@ -68,27 +71,31 @@ class PhysicsEntity:
         entity_rect = self.rect()
         for rect in tilemap.physics_create_rects(self.pos):
             if entity_rect.colliderect(rect):
-                if frame_movement[1] > 0:  # Falling 
+                if frame_movement[1] > 0:  # Falling
                     entity_rect.bottom = rect.top
-                    self.collisions['down'] = True  
+                    self.collisions["down"] = True
                 if frame_movement[1] < 0:  # Jumping
                     entity_rect.top = rect.bottom
-                    self.collisions['up'] = True
-                # Update position 
+                    self.collisions["up"] = True
+                # Update position
                 self.pos[1] = entity_rect.y
 
         # Apply gravity, ensuring terminal velocity (5) is not exceeded
         self.velocity[1] = min(self.velocity[1] + 0.1, 5)
-        
-        # Reset velocity if a surface is met 
-        if self.collisions['down'] or self.collisions['up']:
+
+        # Reset velocity if a surface is met
+        if self.collisions["down"] or self.collisions["up"]:
             self.velocity[1] = 0
 
-    def render(self, surface):
+    def render(self, surface, offset=(0, 0)):
         """
         Render the entity on the given surface at its current position
 
         Args:
             surface (pygame.Surface): The surface to draw the entity on.
+            offset (tuple): Coordinates to offset for the 'camera'
         """
-        surface.blit(self.game.assets[self.type], self.pos)
+        surface.blit(
+            self.game.assets[self.type],
+            (self.pos[0] - offset[0], self.pos[1] - offset[1]),
+        )

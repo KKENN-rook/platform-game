@@ -30,6 +30,9 @@ class Game:
         self.player = PhysicsEntity(self, "player", (50, 50), (8, 15))  # player is 8x15
         self.tilemap = Tilemap(self, tile_size=16)
 
+        # Camera
+        self.scroll = [0, 0]
+
         self.movement = [False, False]  # [Left, Right]
 
     def run(self):
@@ -40,9 +43,9 @@ class Game:
 
             # Renders / Position updates
             self.display.fill((14, 219, 248))  # Sky-color background
-            self.tilemap.render(self.display)
+            self.tilemap.render(self.display, offset=self.scroll)
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
-            self.player.render(self.display)
+            self.player.render(self.display, offset=self.scroll)
 
             # Event handling
             for event in pygame.event.get():

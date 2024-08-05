@@ -47,34 +47,36 @@ class Tilemap:
                 "pos": (10, i + 5),
             }
 
-    def _render_tile(self, surface, tile, pos_multiplier=1):
-        """
-        Helper function to render tile a single tile.
-        Args:
-            surface(pygame.Surface): The surface to draw the tile on.
-            tile(dict): The tile data containing type, variant, and position.
-            pos_multiplier(int): Multiplier for the position tile on grid correctly.
-        """
-        tile_type = tile["type"]
-        tile_variant = tile["variant"]
-        tile_pos_x = tile["pos"][0] * pos_multiplier
-        tile_pos_y = tile["pos"][1] * pos_multiplier
-        tile_image = self.game.assets[tile_type][tile_variant]
-
-        surface.blit(tile_image, (tile_pos_x, tile_pos_y))
-
-    def render(self, surface):
+    def render(self, surface, offset=(0, 0)):
         """
         Draws (blits) all tiles onto a surface.
+
         Args:
-            surface(pygame.Surface): The surface to draw the tiles on.
+            surface (pygame.Surface): The surface to draw the tiles on.
         """
-        # Render offgrid tiles in the bg
+        # Render offgrid tiles (non-interactable) in the background
         for tile in self.offgrid_tiles:
-            self._render_tile(surface, tile, pos_multiplier=1)
-        # Render grid tiles in the fg
+            tile_type = tile["type"]
+            tile_variant = tile["variant"]
+            tile_pos_x = tile["pos"][0]
+            tile_pos_y = tile["pos"][1]
+            tile_image = self.game.assets[tile_type][tile_variant]
+            surface.blit(
+                tile_image,
+                (tile_pos_x - self.game.scroll[0], tile_pos_y - self.game.scroll[1]),
+            )
+
+        # Render grid tiles in the foreground (mult by tile size to align on grid.)
         for tile in self.tilemap.values():
-            self._render_tile(surface, tile, pos_multiplier=self.tile_size)
+            tile_type = tile["type"]
+            tile_variant = tile["variant"]
+            tile_pos_x = tile["pos"][0] * self.tile_size
+            tile_pos_y = tile["pos"][1] * self.tile_size
+            tile_image = self.game.assets[tile_type][tile_variant]
+            surface.blit(
+                tile_image,
+                (tile_pos_x - self.game.scroll[0], tile_pos_y - self.game.scroll[1]),
+            )
 
     def border_tiles(self, pos):
         """
