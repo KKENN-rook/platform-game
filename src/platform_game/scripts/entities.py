@@ -93,7 +93,7 @@ class PhysicsEntity:
 
         Args:
             surface (pygame.Surface): The surface to draw the entity on.
-            offset (tuple): Coordinates to offset for the 'camera'
+            offset (tuple): Coordinates to offset for mock camera.
         """
         surface.blit(
             self.game.assets[self.type],

@@ -53,6 +53,7 @@ class Tilemap:
 
         Args:
             surface (pygame.Surface): The surface to draw the tiles on.
+            offset (tuple): Coordinates to offset for mock camera.
         """
         # Render offgrid tiles (non-interactable) in the background
         for tile in self.offgrid_tiles:
