@@ -10,7 +10,7 @@ class PhysicsEntity:
             game (Game): Reference to the game object.
             ent_type (str): Type of the entity.
             pos (tuple): Initial position of the entity (x, y).
-            size (tuple): Size of the entity (width, height) (Pixels of asset).
+            size (tuple): Size of the entity (w x h in pixels)
             collisions (dict): Collision detection bools
         """
         self.game = game
@@ -93,7 +93,7 @@ class PhysicsEntity:
 
         Args:
             surface (pygame.Surface): The surface to draw the entity on.
-            offset (tuple): Coordinates to offset for mock camera.
+            offset (tuple): Coordinates to offset for center camera.
         """
         surface.blit(
             self.game.assets[self.type],

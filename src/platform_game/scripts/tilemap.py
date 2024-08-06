@@ -25,13 +25,11 @@ class Tilemap:
         Args:
             game (Game): Reference to the game object.
             tile_size (int): Size of each tile in pixels.
-            tilemap (dict): Grid tiles, key represents location on surf
-            offgrid_tiles (list): Non-interactable tiles
         """
         self.game = game
         self.tile_size = tile_size
-        self.tilemap = {}
-        self.offgrid_tiles = []
+        self.tilemap = {}  # Grid tiles; keys represent location in world
+        self.offgrid_tiles = []  # Non-interactable tiles 
 
         # Basic tile generation format
         for i in range(10):
@@ -53,7 +51,7 @@ class Tilemap:
 
         Args:
             surface (pygame.Surface): The surface to draw the tiles on.
-            offset (tuple): Coordinates to offset for mock camera.
+            offset (tuple): Coordinates to offset for center camera.
         """
         # Render offgrid tiles (non-interactable) in the background
         for tile in self.offgrid_tiles:
@@ -64,7 +62,7 @@ class Tilemap:
             tile_image = self.game.assets[tile_type][tile_variant]
             surface.blit(
                 tile_image,
-                (tile_pos_x - self.game.scroll[0], tile_pos_y - self.game.scroll[1]),
+                (tile_pos_x - offset[0], tile_pos_y - offset[1]),
             )
 
         # Render grid tiles in the foreground (mult by tile size to align on grid.)
@@ -76,7 +74,7 @@ class Tilemap:
             tile_image = self.game.assets[tile_type][tile_variant]
             surface.blit(
                 tile_image,
-                (tile_pos_x - self.game.scroll[0], tile_pos_y - self.game.scroll[1]),
+                (tile_pos_x - offset[0], tile_pos_y - offset[1]),
             )
 
     def border_tiles(self, pos):
