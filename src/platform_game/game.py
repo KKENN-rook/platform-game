@@ -1,7 +1,7 @@
 import pygame
 import sys
-from scripts.entities import PhysicsEntity
-from scripts.utils import load_image, load_images
+from scripts.entities import PhysicsEntity, Player
+from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.clouds import Clouds
 
@@ -18,7 +18,6 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.display = pygame.Surface((320, 240))  # Display to be upscaled
-
         # Load game assets
         self.assets = {
             "decor": load_images("tiles/decor"),
@@ -26,75 +25,53 @@ class Game:
             "grass": load_images("tiles/grass"),
             "stone": load_images("tiles/stone"),
             "player": load_image("entities/player.png"),
-            "background": load_image('background.png'),
-            "clouds": load_images('clouds'),
+            "background": load_image("background.png"),
+            "clouds": load_images("clouds"),
+            "player/idle": Animation(load_images("entities/player/idle"), img_dur=6),
+            "player/run": Animation(load_images("entities/player/run"), img_dur=4),
+            "player/jump": Animation(load_images("entities/player/jump")),
+            "player/slide": Animation(load_images("entities/player/slide")),
+            "player/wall_slide": Animation(load_images("entities/player/wall_slide")),
         }
-
-        self.clouds = Clouds(self.assets['clouds'], count=16)
-        self.player = PhysicsEntity(self, "player", (50, 50), (8, 15))
-        self.movement = [False, False]  # [Left, Right]
+        # Game Environment
         self.tilemap = Tilemap(self, tile_size=16)
+        self.clouds = Clouds(self.assets["clouds"], count=16)
+        # Player initialization
+        self.player = Player(self, (50, 50), (8, 15))
+        self.movement = [False, False]  # [Left, Right]
         # Camera position / offset needed to center player on the screen
         # represents the game-world coordinates of the top-left corner of the display
         self.cam_pos = [0, 0]
 
-    def run(self):
-        """
-        Main game loop. Handles events, updates game state, and renders the game.
-        """
-        while self.running:
+    def update_cam(self):
+        # Calculate the target camera position needed to center the player
+        target_cam_x = self.player.rect().centerx - self.display.get_width() / 2
+        target_cam_y = self.player.rect().centery - self.display.get_height() / 2
+        # Update the camera pos to target pos
+        cam_speed = 30  # value = how many frames it takes to reach destination
+        self.cam_pos[0] += (target_cam_x - self.cam_pos[0]) / cam_speed
+        self.cam_pos[1] += (target_cam_y - self.cam_pos[1]) / cam_speed
 
-            # Render BG
-            self.display.blit(self.assets['background'], (0, 0))
-
-            # Calculate the target camera position needed to center the player
-            target_cam_x = self.player.rect().centerx - self.display.get_width() / 2
-            target_cam_y = self.player.rect().centery - self.display.get_height() / 2
-
-            # Update the camera pos to target pos
-            cam_speed = 30  # value = how many frames it takes to reach destination 
-            self.cam_pos[0] += (target_cam_x - self.cam_pos[0]) / cam_speed
-            self.cam_pos[1] += (target_cam_y - self.cam_pos[1]) / cam_speed
-
-            # Prepare the offset for rendering
-            # If player position and camera position are both floats, could cause jitter
-            rend_offset = (int(self.cam_pos[0]), int(self.cam_pos[1]))
-
-            # Render entities onto the display
-            self.clouds.update()
-            self.clouds.render(self.display, offset=rend_offset)
-            self.tilemap.render(self.display, offset=rend_offset)
-            self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
-            self.player.render(self.display, offset=rend_offset)
-
-            # Event handling
-            for event in pygame.event.get():
-                # Exit window
-                if event.type == pygame.QUIT:
-                    self.quit()
-                # Key press
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        self.movement[0] = True
-                    if event.key == pygame.K_RIGHT:
-                        self.movement[1] = True
-                    if event.key == pygame.K_SPACE:
-                        self.player.velocity[1] = -3
-                # Key release
-                if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_LEFT:
-                        self.movement[0] = False
-                    if event.key == pygame.K_RIGHT:
-                        self.movement[1] = False
-
-            # Upscale the display and render it on the screen
-            self.screen.blit(
-                pygame.transform.scale(self.display, self.screen.get_size()), (0, 0)
-            )
-
-            # Update the screen
-            pygame.display.update()
-            self.clock.tick(60)  # 60 FPS
+    def handle_events(self):
+        # Event handling
+        for event in pygame.event.get():
+            # Exit window
+            if event.type == pygame.QUIT:
+                self.quit()
+            # Key press
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self.movement[0] = True
+                if event.key == pygame.K_RIGHT:
+                    self.movement[1] = True
+                if event.key == pygame.K_SPACE:
+                    self.player.velocity[1] = -3
+            # Key release
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT:
+                    self.movement[0] = False
+                if event.key == pygame.K_RIGHT:
+                    self.movement[1] = False
 
     def quit(self):
         """
@@ -103,6 +80,41 @@ class Game:
         self.running = False
         pygame.quit()
         sys.exit()
+
+    def run(self):
+        """
+        Main game loop. Handles events, updates game state, and renders the game.
+        """
+        while self.running:
+
+            # Render BG
+            self.display.blit(self.assets["background"], (0, 0))
+
+            # Update cam pos
+            self.update_cam()
+
+            # Prepare the offset for rendering
+            # If player position and camera position are both floats, could cause jitter
+            render_offset = (int(self.cam_pos[0]), int(self.cam_pos[1]))
+
+            # Render entities onto the display
+            self.clouds.update()
+            self.clouds.render(self.display, offset=render_offset)
+            self.tilemap.render(self.display, offset=render_offset)
+            self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
+            self.player.render(self.display, offset=render_offset)
+
+            # Handle input
+            self.handle_events()
+
+            # Upscale the display and render it on the screen
+            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
+
+            # Display the screen
+            pygame.display.update()
+
+            # 60 FPS
+            self.clock.tick(60)
 
 
 Game().run()

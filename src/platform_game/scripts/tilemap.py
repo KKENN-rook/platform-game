@@ -29,7 +29,7 @@ class Tilemap:
         self.game = game
         self.tile_size = tile_size
         self.tilemap = {}  # Grid tiles; keys represent location in world
-        self.offgrid_tiles = []  # Non-interactable tiles 
+        self.offgrid_tiles = []  # Non-interactable tiles
 
         # Basic tile generation format
         for i in range(10):
@@ -75,10 +75,11 @@ class Tilemap:
             surf (pygame.Surface): The surface to draw the tiles on.
             offset (tuple): Coordinates to offset for center camera.
         """
-        # Fetch start and end screen pixels (visible world coordinates)
-        start_x, end_x = offset[0] // self.tile_size, (offset[0] + surf.get_width()) // self.tile_size + 1
-        start_y, end_y = offset[1] // self.tile_size, (offset[1] + surf.get_height()) // self.tile_size + 1
-
+        # Determine the portion of the tile grid that is visible on the screen
+        start_x = offset[0] // self.tile_size
+        end_x = (offset[0] + surf.get_width()) // self.tile_size + 1  # +1 to full render end tiles.
+        start_y = offset[1] // self.tile_size
+        end_y = (offset[1] + surf.get_height()) // self.tile_size + 1
         # If a tile is located within the screen, render it
         for x in range(start_x, end_x):
             for y in range(start_y, end_y):
