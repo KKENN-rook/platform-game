@@ -45,37 +45,63 @@ class Tilemap:
                 "pos": (10, i + 5),
             }
 
-    def render(self, surface, offset=(0, 0)):
+    def render(self, surf, offset=(0, 0)):
         """
         Draws (blits) all tiles onto a surface.
-
         Args:
-            surface (pygame.Surface): The surface to draw the tiles on.
+            surf (pygame.Surface): The surface to draw the tiles on.
             offset (tuple): Coordinates to offset for center camera.
         """
         # Render offgrid tiles (non-interactable) in the background
-        for tile in self.offgrid_tiles:
-            tile_type = tile["type"]
-            tile_variant = tile["variant"]
-            tile_pos_x = tile["pos"][0]
-            tile_pos_y = tile["pos"][1]
-            tile_image = self.game.assets[tile_type][tile_variant]
-            surface.blit(
-                tile_image,
-                (tile_pos_x - offset[0], tile_pos_y - offset[1]),
-            )
+        self._render_offgrid_tiles(surf, offset)
 
-        # Render grid tiles in the foreground (mult by tile size to align on grid.)
-        for tile in self.tilemap.values():
-            tile_type = tile["type"]
-            tile_variant = tile["variant"]
-            tile_pos_x = tile["pos"][0] * self.tile_size
-            tile_pos_y = tile["pos"][1] * self.tile_size
-            tile_image = self.game.assets[tile_type][tile_variant]
-            surface.blit(
-                tile_image,
-                (tile_pos_x - offset[0], tile_pos_y - offset[1]),
-            )
+        # Render grid tiles in the foreground
+        self._render_grid_tiles(surf, offset)
+
+    def _render_offgrid_tiles(self, surf, offset):
+        """
+        Render offgrid tiles (non-interactable).
+        Args:
+            surf (pygame.Surface): The surface to draw the tiles on.
+            offset (tuple): Coordinates to offset for center camera.
+        """
+        for tile in self.offgrid_tiles:
+            self._draw_tile(surf, tile, offset)
+
+    def _render_grid_tiles(self, surf, offset):
+        """
+        Render only the grid tiles that are visible on the screen.
+        Args:
+            surf (pygame.Surface): The surface to draw the tiles on.
+            offset (tuple): Coordinates to offset for center camera.
+        """
+        # Fetch start and end screen pixels (visible world coordinates)
+        start_x, end_x = offset[0] // self.tile_size, (offset[0] + surf.get_width()) // self.tile_size + 1
+        start_y, end_y = offset[1] // self.tile_size, (offset[1] + surf.get_height()) // self.tile_size + 1
+
+        # If a tile is located within the screen, render it
+        for x in range(start_x, end_x):
+            for y in range(start_y, end_y):
+                tile_coords = f"{x};{y}"
+                if tile_coords in self.tilemap:
+                    tile = self.tilemap[tile_coords]
+                    self._draw_tile(surf, tile, offset)
+
+    def _draw_tile(self, surf, tile, offset):
+        """
+        Blit a tile onto the surface with the given offset.
+        Args:
+            surf (pygame.Surface): The surface to draw the tiles on.
+            tile (dict): The tile data.
+            offset (tuple): Coordinates to offset for center camera.
+        """
+        tile_type = tile["type"]
+        tile_variant = tile["variant"]
+        tile_pos_x = tile["pos"][0] * self.tile_size
+        tile_pos_y = tile["pos"][1] * self.tile_size
+        tile_image = self.game.assets[tile_type][tile_variant]
+
+        surf.blit(tile_image, (tile_pos_x - offset[0], tile_pos_y - offset[1]))
 
     def border_tiles(self, pos):
         """
