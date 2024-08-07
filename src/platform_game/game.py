@@ -39,12 +39,15 @@ class Game:
         # Player initialization
         self.player = Player(self, (50, 50), (8, 15))
         self.movement = [False, False]  # [Left, Right]
-        # Camera position / offset needed to center player on the screen
+        # "Camera" position / offset needed to center player on the screen
         # represents the game-world coordinates of the top-left corner of the display
         self.cam_pos = [0, 0]
 
     def update_cam(self):
-        # Calculate the target camera position needed to center the player
+        """
+        Calc target camera position needed to center player and update its position.
+        """
+        # Calculate the target camera position
         target_cam_x = self.player.rect().centerx - self.display.get_width() / 2
         target_cam_y = self.player.rect().centery - self.display.get_height() / 2
         # Update the camera pos to target pos
@@ -53,21 +56,20 @@ class Game:
         self.cam_pos[1] += (target_cam_y - self.cam_pos[1]) / cam_speed
 
     def handle_events(self):
-        # Event handling
+        """
+        Handle input from hardware.
+        """
         for event in pygame.event.get():
-            # Exit window
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT:  # "X" on Window
                 self.quit()
-            # Key press
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:  # Key press
                 if event.key == pygame.K_LEFT:
                     self.movement[0] = True
                 if event.key == pygame.K_RIGHT:
                     self.movement[1] = True
                 if event.key == pygame.K_SPACE:
                     self.player.velocity[1] = -3
-            # Key release
-            if event.type == pygame.KEYUP:
+            if event.type == pygame.KEYUP:  # Key release
                 if event.key == pygame.K_LEFT:
                     self.movement[0] = False
                 if event.key == pygame.K_RIGHT:
@@ -93,7 +95,6 @@ class Game:
             # Update cam pos
             self.update_cam()
 
-            # Prepare the offset for rendering
             # If player position and camera position are both floats, could cause jitter
             render_offset = (int(self.cam_pos[0]), int(self.cam_pos[1]))
 

@@ -5,7 +5,6 @@ class PhysicsEntity:
     def __init__(self, game, ent_type, pos, size):
         """
         Initialize a physics-based entity.
-
         Args:
             game (Game): Reference to the game object.
             ent_type (str): Type of the entity.
@@ -18,9 +17,9 @@ class PhysicsEntity:
         self.size = size
         self.velocity = [0, 0]  # Initial velocity (x, y)
         self.collisions = {"up": False, "down": False, "left": False, "right": False}
-
-        # Animation stuff
-        self.action = ""
+        # Animation attributes
+        self.action = None
+        self.animation = None
         self.anim_offset = (-3, -3)
         self.flip = False
         self.set_action("idle")
@@ -34,33 +33,49 @@ class PhysicsEntity:
         return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
     
     def reset_collisions(self):
-        """# Reset collisions between updates"""
+        """
+        Reset the collision states for the entity.
+        """
         self.collisions = {"up": False, "down": False, "left": False, "right": False}
 
     def calc_displacement(self, movement):
-        """Calculates entity pixel displacement (per frame) based on velocity"""
+        """
+        Calculate the displacement (per frame) of the entity based on movement and velocity.
+        Args:
+            movement (tuple): The movement input (x, y).
+        Returns:
+            tuple: The calculated displacement (dx, dy).
+        """
         return (movement[0] + self.velocity[0], movement[1] + self.velocity[1])
     
     def update_pos_x(self, tilemap, dx):
-        # Update the X position
+        """
+        Update the entity's X position and handle collisions.
+        Args:
+            tilemap (Tilemap): The tilemap for collision detection.
+            dx (float): The displacement in the X direction.
+        """
         self.pos[0] += dx
         # Check for collisions
         entity_rect = self.rect()
         for rect in tilemap.physics_create_rects(self.pos):
             if entity_rect.colliderect(rect):
-                # Moving Right
-                if dx > 0:
+                if dx > 0:  # Moving Right
                     entity_rect.right = rect.left
                     self.collisions["right"] = True
-                # Moving Left
-                if dx < 0:
+                if dx < 0:  # Moving Left
                     entity_rect.left = rect.right
                     self.collisions["left"] = True
-                # Update position
+                # Resolve char position
                 self.pos[0] = entity_rect.x
 
     def update_pos_y(self, tilemap, dy):
-        # Update the Y position
+        """
+        Update the entity's Y position and handle collisions.
+        Args:
+            tilemap (Tilemap): The tilemap for collision detection.
+            dy (float): The displacement in the Y direction.
+        """
         self.pos[1] += dy
         # Check for collisions
         entity_rect = self.rect()
@@ -72,19 +87,27 @@ class PhysicsEntity:
                 if dy < 0:  # Jumping
                     entity_rect.top = rect.bottom
                     self.collisions["up"] = True
-                # Update position
+                # Resolve char position
                 self.pos[1] = entity_rect.y
 
     def update_direction(self, movement_x):
+        """
+        Update the direction the entity is facing based on horizontal movement.
+        Args:
+            movement_x (float): The horizontal movement input.
+        """
         if movement_x > 0:
             self.flip = False
         if movement_x < 0:
             self.flip = True
 
     def update_vy(self):
-        """Update the y-axis velocity"""
+        """
+        Update the y-axis velocity.
+        """
         # Apply gravity, ensuring terminal velocity (5) is not exceeded
         self.velocity[1] = min(self.velocity[1] + 0.1, 5)
+        
         # Reset velocity if a surface is met
         if self.collisions["down"] or self.collisions["up"]:
             self.velocity[1] = 0
@@ -106,18 +129,31 @@ class PhysicsEntity:
 
     def render(self, surface, offset=(0, 0)):
         """
-        Render the entity on the given surface at its current position
-
+        Draw the entity on the given surface at its current position.
         Args:
             surface (pygame.Surface): The surface to draw the entity on.
-            offset (tuple): Coordinates to offset for center camera.
+            offset (tuple): Coordinates to offset for the camera position.
         """
-        surface.blit(
-            pygame.transform.flip(self.animation.img(), self.flip, False),
-            (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1]),
-        )
+        # Calculate the render position
+        render_pos_x = self.pos[0] - offset[0] + self.anim_offset[0]
+        render_pos_y = self.pos[1] - offset[1] + self.anim_offset[1]
+        render_pos = (render_pos_x, render_pos_y)
+        
+        # Get the current frame of the animation
+        current_frame = self.animation.img()
+        
+        # Flip the image if necessary
+        flipped_frame = pygame.transform.flip(current_frame, self.flip, False)
+        
+        # Blit the image onto the surface
+        surface.blit(flipped_frame, render_pos)
 
     def set_action(self, action):
+        """
+        Set the current action of the entity and update the animation.
+        Args:
+            action (str): The new action to set.
+        """
         if action != self.action:
             self.action = action
             self.animation = self.game.assets[self.type + "/" + self.action].copy()
