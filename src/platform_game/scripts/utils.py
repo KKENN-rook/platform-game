@@ -49,6 +49,13 @@ def load_images(path: str) -> list:
 
 class Animation:
     def __init__(self, images, img_dur=5, loop=True):
+        """
+        Initialize an animation.
+        Args:
+            images (list): A list of Pygame Surface objects representing the frames of the animation.
+            img_dur (int): The duration each frame is displayed, in terms of update calls (default is 5).
+            loop (bool): Whether the animation should loop (default is True).
+        """
         self.images = images
         self.img_dur = img_dur
         self.loop = loop
@@ -56,15 +63,33 @@ class Animation:
         self.frame = 0
 
     def copy(self):
+        """
+        Create a copy of the animation.
+        Returns:
+            Animation: A new instance of the Animation class with the same properties.
+        """
         return Animation(self.images, self.img_dur, self.loop)
 
     def update(self):
+        """
+        Update the animation to progress to the next frame.
+        If the animation loops, it will cycle through the frames indefinitely.
+        If the animation does not loop, it will stop at the last frame.
+        """
+        self.frame += 1
+        total_frames = self.img_dur * len(self.images)
         if self.loop:
-            self.frame = (self.frame + 1) % (self.img_dur * len(self.images))
+            self.frame %= total_frames 
         else:
-            self.frame = min(self.frame + 1, self.img_dur * len(self.images) - 1)
-            if self.frame >= self.img_dur * len(self.images) - 1:
+            if self.frame >= total_frames - 1: # -1 to account for frames starting at 0 
+                self.frame = total_frames - 1 
                 self.done = True
 
     def img(self):
-        return self.images[int(self.frame / self.img_dur)]
+        """
+        Get the current frame image.
+        Returns:
+            pygame.Surface: The current frame image.
+        """
+        curr_img_idx = int(self.frame / self.img_dur)
+        return self.images[curr_img_idx]

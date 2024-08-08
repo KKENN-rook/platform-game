@@ -31,7 +31,7 @@ class PhysicsEntity:
             pygame.Rect: A rectangle representing the entity's position and size.
         """
         return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
-    
+
     def reset_collisions(self):
         """
         Reset the collision states for the entity.
@@ -47,7 +47,7 @@ class PhysicsEntity:
             tuple: The calculated displacement (dx, dy).
         """
         return (movement[0] + self.velocity[0], movement[1] + self.velocity[1])
-    
+
     def update_pos_x(self, tilemap, dx):
         """
         Update the entity's X position and handle collisions.
@@ -107,7 +107,7 @@ class PhysicsEntity:
         """
         # Apply gravity, ensuring terminal velocity (5) is not exceeded
         self.velocity[1] = min(self.velocity[1] + 0.1, 5)
-        
+
         # Reset velocity if a surface is met
         if self.collisions["down"] or self.collisions["up"]:
             self.velocity[1] = 0
@@ -138,13 +138,13 @@ class PhysicsEntity:
         render_pos_x = self.pos[0] - offset[0] + self.anim_offset[0]
         render_pos_y = self.pos[1] - offset[1] + self.anim_offset[1]
         render_pos = (render_pos_x, render_pos_y)
-        
+
         # Get the current frame of the animation
         current_frame = self.animation.img()
-        
+
         # Flip the image if necessary
         flipped_frame = pygame.transform.flip(current_frame, self.flip, False)
-        
+
         # Blit the image onto the surface
         surface.blit(flipped_frame, render_pos)
 
@@ -156,21 +156,39 @@ class PhysicsEntity:
         """
         if action != self.action:
             self.action = action
+            # Make a copy of the animation to start from the beginning
             self.animation = self.game.assets[self.type + "/" + self.action].copy()
 
 
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
+        """
+        Initialize the player entity.
+        Args:
+            game (Game): Reference to the game object.
+            pos (tuple): Initial position of the player (x, y).
+            size (tuple): Size of the player (w x h in pixels).
+        """
         super().__init__(game, "player", pos, size)
         self.air_time = 0
 
     def update_airtime(self):
+        """
+        Update the airtime of the player based on collision with the ground.
+        Resets airtime if the player is on the ground, otherwise increments it.
+        """
         if self.collisions["down"]:
             self.air_time = 0
         else:
             self.air_time += 1
 
     def update_action(self, movement=(0, 0)):
+        """
+        Update the player's action based on movement and airtime.
+        Sets the appropriate animation state based on current conditions.
+        Args:
+            movement (tuple): The movement input (x, y).
+        """
         if self.air_time > 4:
             self.set_action("jump")
         elif movement[0] != 0:
@@ -179,6 +197,12 @@ class Player(PhysicsEntity):
             self.set_action("idle")
 
     def update(self, tilemap, movement=(0, 0)):
+        """
+        Update the player's state, including position, collisions, airtime, and actions.
+        Args:
+            tilemap (Tilemap): The tilemap for collision detection.
+            movement (tuple): The movement input (x, y).
+        """
         super().update(tilemap, movement=movement)
         self.update_airtime()
         self.update_action(movement)
