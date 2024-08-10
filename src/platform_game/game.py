@@ -39,8 +39,7 @@ class Game:
         # Player initialization
         self.player = Player(self, (50, 50), (8, 15))
         self.movement = [False, False]  # [Left, Right]
-        # "Camera" position / offset needed to center player on the screen
-        # represents the game-world coordinates of the top-left corner of the display
+        # Essentially tracks the game world coordinates, top-left corner of screen is cam pos [x, y].
         self.cam_pos = [0, 0]
 
     def update_cam(self):

@@ -4,6 +4,7 @@ from scripts.utils import load_images, Animation
 from scripts.tilemap import Tilemap
 
 RENDER_SCALE = 2.0
+CAM_SPEED = 3  # Higher = Faster 
 
 
 class Editor:
@@ -120,23 +121,28 @@ class Editor:
             # Render BG
             self.display.fill((0, 0, 0))
 
-            self.cam_pos[0] += (self.movement[1] - self.movement[0]) * 2
-            self.cam_pos[1] += (self.movement[3] - self.movement[2]) * 2
-
+            self.cam_pos[0] += (self.movement[1] - self.movement[0]) * CAM_SPEED
+            self.cam_pos[1] += (self.movement[3] - self.movement[2]) * CAM_SPEED
             render_offset = (int(self.cam_pos[0]), int(self.cam_pos[1]))
             self.tilemap.render(self.display, offset=render_offset)
 
+            # Fetch current tile to be placed 
             curr_tile_group = self.assets[self.tile_list[self.tile_group]]
             curr_tile = curr_tile_group[self.tile_variant].copy()
             curr_tile.set_alpha(100)  # Semi-transparent
 
+            # Get the display mouse pos and convert it to game world coords 
             mpos = pygame.mouse.get_pos()
             mpos = (mpos[0] / RENDER_SCALE, mpos[1] / RENDER_SCALE)
+            
+            # Get the tile grid coordinates 
             tile_pos = (
                 int((mpos[0] + self.cam_pos[0]) // self.tilemap.tile_size),
                 int((mpos[1] + self.cam_pos[1]) // self.tilemap.tile_size),
             )
 
+            
+            # Render the selected tile onto the screen on grid or off-grid based on mode 
             if self.ongrid:
                 self.display.blit(
                     curr_tile,
@@ -148,12 +154,15 @@ class Editor:
             else:
                 self.display.blit(curr_tile, (mpos[0], mpos[1]))
 
-            if self.left_click and self.ongrid:  # Place tile
+            # Place a tile 
+            if self.left_click and self.ongrid:
                 self.tilemap.tilemap[str(tile_pos[0]) + ";" + str(tile_pos[1])] = {
                     "type": self.tile_list[self.tile_group],
                     "variant": self.tile_variant,
                     "pos": tile_pos,
                 }
+            
+            # Delete a tile 
             if self.right_click:
                 tile_loc = str(tile_pos[0]) + ";" + str(tile_pos[1])
                 if tile_loc in self.tilemap.tilemap:
@@ -169,11 +178,10 @@ class Editor:
                     if tile_r.collidepoint(mpos):
                         self.tilemap.offgrid_tiles.remove(tile)
 
+            # Display selected tile in the top-left corner 
             self.display.blit(curr_tile, (5, 5))
 
-            # Handle input
-            mpos = pygame.mouse.get_pos()
-            mpos = (mpos[0] / RENDER_SCALE, mpos[1] / RENDER_SCALE)
+            # Handle input events 
             self.handle_events(mouse_pos=mpos)
 
             # Upscale the display and render it on the screen
