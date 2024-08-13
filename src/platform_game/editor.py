@@ -39,8 +39,14 @@ class Editor:
         self.right_click = False
         self.shift = False
         self.ongrid = True
+        self.mpos = (0, 0)  # Initialize mouse position
 
-    def handle_events(self, mouse_pos):
+    def update_mouse_position(self):
+        """Get mouse screen position and scale it to match display position"""
+        mpos = pygame.mouse.get_pos()
+        self.mpos = (mpos[0] / RENDER_SCALE, mpos[1] / RENDER_SCALE)
+
+    def handle_events(self):
         """
         Handle input from hardware.
         """
@@ -48,7 +54,7 @@ class Editor:
             if event.type == pygame.QUIT:  # "X" on Window
                 self.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                self.handle_mouse_down(event, mouse_pos)
+                self.handle_mouse_down(event)
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.handle_mouse_up(event)
             if event.type == pygame.KEYDOWN:  # Key press
@@ -64,12 +70,12 @@ class Editor:
         pygame.quit()
         sys.exit()
 
-    def handle_mouse_down(self, event, mouse_pos):
+    def handle_mouse_down(self, event):
         """Handle mouse button down events."""
         if event.button == 1:  # Left click
             self.left_click = True
             if not self.ongrid:
-                self.add_offgrid_tile(mouse_pos)
+                self.add_offgrid_tile()
 
         elif event.button == 3:  # Right click
             self.right_click = True
@@ -126,23 +132,25 @@ class Editor:
                 self.tile_group = (self.tile_group + 1) % len(self.tile_list)
             self.tile_variant = 0
 
-    def add_offgrid_tile(self, mouse_pos):
+    def add_offgrid_tile(self):
         """Add a tile at the current mouse position in off-grid mode."""
         tile_data = {
             "type": self.tile_list[self.tile_group],
             "variant": self.tile_variant,
-            "pos": (mouse_pos[0] + self.cam_pos[0], mouse_pos[1] + self.cam_pos[1]),
+            "pos": (self.mpos[0] + self.cam_pos[0], self.mpos[1] + self.cam_pos[1]),
         }
         self.tilemap.offgrid_tiles.append(tile_data)
         print(f"Added off-grid tile at: {tile_data['pos']}")
+        print(f"Cam pos: {self.cam_pos}")
 
     def update_camera_pos(self):
         """Update the camera position based on user input."""
         self.cam_pos[0] += (self.movement[1] - self.movement[0]) * CAM_SPEED
         self.cam_pos[1] += (self.movement[3] - self.movement[2]) * CAM_SPEED
 
-    def render_tile(self, curr_tile, tile_pos, mpos):
+    def render_tile(self, curr_tile, tile_pos):
         """Render the current tile at the correct position."""
+        # On-grid tiles 
         if self.ongrid:
             self.display.blit(
                 curr_tile,
@@ -151,11 +159,12 @@ class Editor:
                     tile_pos[1] * self.tilemap.tile_size - self.cam_pos[1],
                 ),
             )
+        # Off-grid tiles
         else:
-            self.display.blit(curr_tile, mpos)
+            self.display.blit(curr_tile, self.mpos)
 
-    def place_tile(self, tile_pos):
-        """Place a tile on the grid or off-grid based on the current mode."""
+    def place_grid_tile(self, tile_pos):
+        """Place a tile on the grid."""
         if self.left_click and self.ongrid:  # Place on grid
             self.tilemap.tilemap[f"{tile_pos[0]};{tile_pos[1]}"] = {
                 "type": self.tile_list[self.tile_group],
@@ -163,7 +172,7 @@ class Editor:
                 "pos": tile_pos,
             }
 
-    def delete_tile(self, tile_pos, mpos):
+    def delete_tile(self, tile_pos):
         """Delete a tile from the grid or off-grid."""
         if self.right_click:  # Delete
             # Delete on-grid tile
@@ -180,7 +189,7 @@ class Editor:
                     tile_img.get_width(),
                     tile_img.get_height(),
                 )
-                if tile_r.collidepoint(mpos):
+                if tile_r.collidepoint(self.mpos):
                     self.tilemap.offgrid_tiles.remove(tile)
 
     def run(self):
@@ -188,33 +197,31 @@ class Editor:
         Main game loop. Handles events, updates game state, and renders the game.
         """
         while self.running:
-
             # Render BG
             self.display.fill((0, 0, 0))
             self.update_camera_pos()
             render_offset = (int(self.cam_pos[0]), int(self.cam_pos[1]))
             self.tilemap.render(self.display, offset=render_offset)
 
+            # Update mouse position
+            self.update_mouse_position()
+
             # Fetch current tile to be placed
             curr_tile_group = self.assets[self.tile_list[self.tile_group]]
             curr_tile = curr_tile_group[self.tile_variant].copy()
             curr_tile.set_alpha(100)  # Semi-transparent
 
-            # Get the display mouse pos and convert it to game world coords
-            mpos = pygame.mouse.get_pos()
-            mpos = (mpos[0] / RENDER_SCALE, mpos[1] / RENDER_SCALE)
-
             # Get the tile's grid coordinates
             tile_pos = (
-                int((mpos[0] + self.cam_pos[0]) // self.tilemap.tile_size),
-                int((mpos[1] + self.cam_pos[1]) // self.tilemap.tile_size),
+                int((self.mpos[0] + self.cam_pos[0]) // self.tilemap.tile_size),
+                int((self.mpos[1] + self.cam_pos[1]) // self.tilemap.tile_size),
             )
 
-            self.render_tile(curr_tile, tile_pos, mpos)
-            self.place_tile(tile_pos)
-            self.delete_tile(tile_pos, mpos)
+            self.render_tile(curr_tile, tile_pos)
+            self.place_grid_tile(tile_pos)
+            self.delete_tile(tile_pos)
             self.display.blit(curr_tile, (5, 5))  # Display selected tile in the top-left corner
-            self.handle_events(mpos)
+            self.handle_events()
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(60)
