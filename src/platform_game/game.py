@@ -1,9 +1,12 @@
 import pygame
 import sys
+import random
+import math
 from scripts.entities import PhysicsEntity, Player
 from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.clouds import Clouds
+from scripts.particle import Particle
 
 
 class Game:
@@ -32,18 +35,38 @@ class Game:
             "player/jump": Animation(load_images("entities/player/jump")),
             "player/slide": Animation(load_images("entities/player/slide")),
             "player/wall_slide": Animation(load_images("entities/player/wall_slide")),
+            "particle/leaf": Animation(load_images("particles/leaf"), img_dur=20, loop=False),
         }
         # Game Environment
         self.tilemap = Tilemap(self, tile_size=16)
-        self.tilemap.load('map.json')
+        self.tilemap.load("map.json")
         self.clouds = Clouds(self.assets["clouds"], count=16)
+        self.leaf_spawners = []
+        for tree in self.tilemap.extract([("large_decor", 2)], keep=True):
+            self.leaf_spawners.append(pygame.Rect(4 + tree["pos"][0], 4 + tree["pos"][1], 23, 13))
+        self.particles = []
         # Player initialization
         self.player = Player(self, (50, 50), (8, 15))
         self.movement = [False, False]  # [Left, Right]
         # Essentially tracks the game world coordinates, top-left corner of screen is cam pos [x, y].
         self.cam_pos = [0, 0]
 
-        print(self.tilemap.extract([('large_decor', 2)], keep=True))
+    def generate_leaf_particles(self):
+        """Generate leaf particles from spawners. Chance based, larger the object higher chance."""
+        for rect in self.leaf_spawners:
+            if random.random() * 50000 < rect.width * rect.height:
+                pos = (rect.x + (random.random() * rect.width), rect.y + (random.random() * rect.height))
+                self.particles.append(Particle(self, "leaf", pos, velocity=[-0.1, 0.3], frame=random.randint(0, 20)))
+
+    def update_particles(self, render_offset):
+        """Update and render particles."""
+        for particle in self.particles.copy():
+            kill = particle.update()
+            particle.render(self.display, offset=render_offset)
+            if particle.type == "leaf":
+                particle.pos[0] += math.sin(particle.animation.frame * 0.035) * 0.3
+            if kill:
+                self.particles.remove(particle)
 
     def update_cam(self):
         """
@@ -100,12 +123,16 @@ class Game:
             # If player position and camera position are both floats, could cause jitter
             render_offset = (int(self.cam_pos[0]), int(self.cam_pos[1]))
 
+            # Particle generation
+            self.generate_leaf_particles()
+
             # Render entities onto the display
             self.clouds.update()
             self.clouds.render(self.display, offset=render_offset)
             self.tilemap.render(self.display, offset=render_offset)
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
             self.player.render(self.display, offset=render_offset)
+            self.update_particles(render_offset)
 
             # Handle input
             self.handle_events()

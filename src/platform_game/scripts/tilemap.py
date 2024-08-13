@@ -1,5 +1,6 @@
 import pygame
 import json
+import copy
 
 # Offsets used to calculate neighboring tiles around a given tile position
 BORDERING_TILE_OFFSETS = [
@@ -61,20 +62,32 @@ class Tilemap:
             }
 
     def extract(self, id_pairs, keep=False):
+        """
+        Extracts tiles that match the given (type, variant) pairs from both 
+        off-grid tiles and the grid-based tilemap.
+        Args:
+            id_pairs (set of tuples): A set of (type, variant) pairs to match tiles against.
+            keep (bool): If False, removes matched tiles from the map. Defaults to False.
+        Returns:
+            matches (list): A list of matched tile dictionaries, with their positions adjusted for off-grid tiles.
+        """
         matches = []
+        # Iterate over off-grid tiles
         for tile in self.offgrid_tiles.copy():
             if (tile['type'], tile['variant']) in id_pairs:
                 matches.append(tile.copy())
                 if not keep:
                     self.offgrid_tiles.remove(tile)
         
+        # Iterate over the grid-based tilemap
         for loc in self.tilemap:
             tile = self.tilemap[loc]
             if (tile['type'], tile['variant']) in id_pairs:
-                matches.append(tile.copy())
-                matches[-1]['pos'] = matches[-1]['pos'].copy()
-                matches[-1]['pos'][0] *= self.tile_size
-                matches[-1]['pos'][1] *= self.tile_size
+                copied_tile = copy.deepcopy(tile)
+                # Convert grid coordinates to pixel coords
+                copied_tile['pos'][0] *= self.tile_size
+                copied_tile['pos'][1] *= self.tile_size
+                matches.append(copied_tile)
                 if not keep:
                     del self.tilemap[loc]
 
