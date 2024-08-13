@@ -112,6 +112,8 @@ class Editor:
             self.shift = True
         elif event.key == pygame.K_o:
             self.tilemap.save('map.json')
+        elif event.key == pygame.K_t:
+            self.tilemap.autotile()
 
     def handle_key_up(self, event):
         """Handle key release events."""

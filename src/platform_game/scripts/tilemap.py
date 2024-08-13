@@ -16,6 +16,21 @@ BORDERING_TILE_OFFSETS = [
 # Set of tile types that have physics applied (e.g., collision detection)
 PHYSICS_TILES = {"grass", "stone"}
 
+# If neighbors exist at position(key) use variant(value)
+AUTOTILE_MAP = {
+    tuple(sorted([(1, 0), (0, 1)])): 0,  # If tile exists on the R and below, use variant 0
+    tuple(sorted([(1, 0), (0, 1), (-1, 0)])): 1,
+    tuple(sorted([(-1, 0), (0, 1)])): 2,
+    tuple(sorted([(-1, 0), (0, -1), (0, 1)])): 3,
+    tuple(sorted([(-1, 0), (0, -1)])): 4,
+    tuple(sorted([(-1, 0), (0, -1), (1, 0)])): 5,
+    tuple(sorted([(1, 0), (0, -1)])): 6,
+    tuple(sorted([(1, 0), (0, -1), (0, 1)])): 7,
+    tuple(sorted([(1, 0), (-1, 0), (0, 1), (0, -1)])): 8,
+}
+# Variants to support autotiling
+AUTOTILE_TYPES = {"grass", "stone"}
+
 
 class Tilemap:
     def __init__(self, game, tile_size=16):
@@ -132,7 +147,32 @@ class Tilemap:
                     )
                 )
         return rects
-    
+
+    def autotile(self):
+        """
+        Automatically adjust tiles to its proper variant based on their neighboring tiles.
+        """
+        for loc in self.tilemap:
+            tile = self.tilemap[loc]
+            neighbors = set()
+
+            # Check neighboring tiles in the four cardinal directions
+            for shift in [(1, 0), (-1, 0), (0, -1), (0, 1)]:
+                check_loc = f"{tile['pos'][0] + shift[0]};{tile['pos'][1] + shift[1]}"
+
+                # If a neighboring tile exists and is of the same type, add its direction to neighbors
+                if check_loc in self.tilemap:
+                    if self.tilemap[check_loc]["type"] == tile["type"]:
+                        neighbors.add(shift)
+
+            # Convert neighbors to a sorted tuple to create a consistent key
+            neighbors = tuple(sorted(neighbors))
+
+            # If the tile type supports autotiling and the neighbors pattern is in the map,
+            # update the tile's variant to match the appropriate variant from the autotile map.
+            if tile["type"] in AUTOTILE_TYPES and neighbors in AUTOTILE_MAP:
+                tile["variant"] = AUTOTILE_MAP[neighbors]
+
     def save(self, path):
         """Save a tilemap to a json file."""
         file = open(path, "w")
