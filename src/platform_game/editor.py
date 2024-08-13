@@ -50,7 +50,7 @@ class Editor:
     def update_mouse_position(self):
         """Get mouse screen position and scale it to match display position"""
         mpos = pygame.mouse.get_pos()
-        self.mpos = (mpos[0] / RENDER_SCALE, mpos[1] / RENDER_SCALE)
+        self.mpos = ((int(mpos[0] / RENDER_SCALE), int(mpos[1] / RENDER_SCALE)))
 
     def handle_events(self):
         """
