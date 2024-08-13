@@ -30,6 +30,12 @@ class Editor:
 
         # Initial editor state
         self.tilemap = Tilemap(self, tile_size=16)
+        
+        try:
+            self.tilemap.load('map.json')
+        except FileNotFoundError:
+            pass
+
         self.movement = [False, False, False, False]  # [Left, Right, Up, Down]
         self.cam_pos = [0, 0]
         self.tile_list = list(self.assets)
@@ -104,6 +110,8 @@ class Editor:
             self.ongrid = not self.ongrid
         elif event.key == pygame.K_LSHIFT:
             self.shift = True
+        elif event.key == pygame.K_o:
+            self.tilemap.save('map.json')
 
     def handle_key_up(self, event):
         """Handle key release events."""
@@ -210,6 +218,7 @@ class Editor:
             curr_tile_group = self.assets[self.tile_list[self.tile_group]]
             curr_tile = curr_tile_group[self.tile_variant].copy()
             curr_tile.set_alpha(100)  # Semi-transparent
+            self.display.blit(curr_tile, (5, 5))  # Display selected tile in the top-left corner
 
             # Get the tile's grid coordinates
             tile_pos = (
@@ -220,7 +229,6 @@ class Editor:
             self.render_tile(curr_tile, tile_pos)
             self.place_grid_tile(tile_pos)
             self.delete_tile(tile_pos)
-            self.display.blit(curr_tile, (5, 5))  # Display selected tile in the top-left corner
             self.handle_events()
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()

@@ -1,4 +1,5 @@
 import pygame
+import json
 
 # Offsets used to calculate neighboring tiles around a given tile position
 BORDERING_TILE_OFFSETS = [
@@ -12,7 +13,6 @@ BORDERING_TILE_OFFSETS = [
     (1, 0),
     (1, 1),
 ]
-
 # Set of tile types that have physics applied (e.g., collision detection)
 PHYSICS_TILES = {"grass", "stone"}
 
@@ -132,3 +132,19 @@ class Tilemap:
                     )
                 )
         return rects
+    
+    def save(self, path):
+        """Save a tilemap to a json file."""
+        file = open(path, "w")
+        json.dump({"tilemap": self.tilemap, "tile_size": self.tile_size, "offgrid": self.offgrid_tiles}, file)
+        file.close()
+
+    def load(self, path):
+        """Load a tilemap from a json file."""
+        file = open(path, "r")
+        map_data = json.load(file)
+        file.close()
+
+        self.tilemap = map_data["tilemap"]
+        self.tile_size = map_data["tile_size"]
+        self.offgrid_tiles = map_data["offgrid"]
