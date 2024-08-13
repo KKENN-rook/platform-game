@@ -43,6 +43,8 @@ class Game:
         # Essentially tracks the game world coordinates, top-left corner of screen is cam pos [x, y].
         self.cam_pos = [0, 0]
 
+        print(self.tilemap.extract([('large_decor', 2)], keep=True))
+
     def update_cam(self):
         """
         Calc target camera position needed to center player and update its position.
