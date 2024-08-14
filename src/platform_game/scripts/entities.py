@@ -113,18 +113,25 @@ class PhysicsEntity:
         if self.collisions["down"] or self.collisions["up"]:
             self.velocity[1] = 0
 
-    def update_vx(self):
-        """Update the x-axis velocity."""
+    def handle_dashing(self):
+        """Handle the dashing logic, updating dashing state and velocity."""
         if self.dashing > 0:
             self.dashing = max(0, self.dashing - 1)
         elif self.dashing < 0:
             self.dashing = min(self.dashing + 1, 0)
-        
+        # Apply high speed during the dash
         if abs(self.dashing) > 50:
             self.velocity[0] = abs(self.dashing) / self.dashing * 8
+            # Apply a sudden deceleration after the initial burst
             if abs(self.dashing) == 51:
                 self.velocity[0] *= 0.1
 
+    def update_vx(self):
+        """ "Update the x-axis velocity, handling dashing and regular movement."""
+        # Dashing logic
+        self.handle_dashing()
+
+        # Apply gradual deceleration to the velocity
         if self.velocity[0] > 0:
             self.velocity[0] = max(0, self.velocity[0] - 0.1)
         else:
@@ -214,7 +221,7 @@ class Player(PhysicsEntity):
         """
         if (self.collisions["right"] or self.collisions["left"]) and self.air_time > 4:
             self.velocity[1] = min(self.velocity[1], 0.5)  # Slow down vertical velocity
-            if self.collisions['right']:
+            if self.collisions["right"]:
                 self.flip = False
             else:
                 self.flip = True
@@ -239,13 +246,13 @@ class Player(PhysicsEntity):
             self.jumps -= 1
             self.air_time = 5
 
-    def dash(self): 
+    def dash(self):
+        """Initiate a dash in the current facing direction."""
         if not self.dashing:
             if self.flip:
                 self.dashing = -60
             else:
-                self.dashing = 60 
-        
+                self.dashing = 60
 
     def update_action(self, movement=(0, 0)):
         """
