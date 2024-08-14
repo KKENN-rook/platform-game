@@ -36,6 +36,7 @@ class Game:
             "player/slide": Animation(load_images("entities/player/slide")),
             "player/wall_slide": Animation(load_images("entities/player/wall_slide")),
             "particle/leaf": Animation(load_images("particles/leaf"), img_dur=20, loop=False),
+            "particle/particle": Animation(load_images("particles/particle"), img_dur=6, loop=False),
         }
         # Game Environment
         self.tilemap = Tilemap(self, tile_size=16)
@@ -64,7 +65,7 @@ class Game:
             kill = particle.update()
             particle.render(self.display, offset=render_offset)
             if particle.type == "leaf":
-                particle.pos[0] += math.sin(particle.animation.frame * 0.035) * 0.3
+                particle.pos[0] += math.sin(particle.animation.frame * 0.035) * 0.3  # Oscillates L/R
             if kill:
                 self.particles.remove(particle)
 
@@ -93,7 +94,9 @@ class Game:
                 if event.key == pygame.K_RIGHT:
                     self.movement[1] = True
                 if event.key == pygame.K_SPACE:
-                    self.player.velocity[1] = -3
+                    self.player.jump()
+                if event.key == pygame.K_LSHIFT:
+                    self.player.dash()
             if event.type == pygame.KEYUP:  # Key release
                 if event.key == pygame.K_LEFT:
                     self.movement[0] = False

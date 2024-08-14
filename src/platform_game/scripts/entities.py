@@ -17,6 +17,7 @@ class PhysicsEntity:
         self.size = size
         self.velocity = [0, 0]  # Initial velocity (x, y)
         self.collisions = {"up": False, "down": False, "left": False, "right": False}
+        self.last_movement = [0, 0]
         # Animation attributes
         self.action = None
         self.animation = None
@@ -112,6 +113,23 @@ class PhysicsEntity:
         if self.collisions["down"] or self.collisions["up"]:
             self.velocity[1] = 0
 
+    def update_vx(self):
+        """Update the x-axis velocity."""
+        if self.dashing > 0:
+            self.dashing = max(0, self.dashing - 1)
+        elif self.dashing < 0:
+            self.dashing = min(self.dashing + 1, 0)
+        
+        if abs(self.dashing) > 50:
+            self.velocity[0] = abs(self.dashing) / self.dashing * 8
+            if abs(self.dashing) == 51:
+                self.velocity[0] *= 0.1
+
+        if self.velocity[0] > 0:
+            self.velocity[0] = max(0, self.velocity[0] - 0.1)
+        else:
+            self.velocity[0] = min(self.velocity[0] + 0.1, 0)
+
     def update(self, tilemap, movement=(0, 0)):
         """
         Update the entity's position based on movement and velocity.
@@ -119,12 +137,14 @@ class PhysicsEntity:
             tilemap (Tilemap): The tilemap for collision detection.
             movement (tuple): The movement input (x, y).
         """
+        self.last_movement = movement  # Updates to movement input not movement executed
         self.reset_collisions()
         d_xy = self.calc_displacement(movement)
         self.update_pos_x(tilemap, d_xy[0])
         self.update_pos_y(tilemap, d_xy[1])
         self.update_direction(movement[0])
         self.update_vy()
+        self.update_vx()
         self.animation.update()
 
     def render(self, surface, offset=(0, 0)):
@@ -171,16 +191,61 @@ class Player(PhysicsEntity):
         """
         super().__init__(game, "player", pos, size)
         self.air_time = 0
+        self.jumps = 2
+        self.wall_slide = False
+        self.dashing = 0
 
-    def update_airtime(self):
+    def update_aerial(self):
         """
         Update the airtime of the player based on collision with the ground.
-        Resets airtime if the player is on the ground, otherwise increments it.
+        Resets the jump counter when the player lands.
         """
         if self.collisions["down"]:
+            self.jumps = 2
             self.air_time = 0
         else:
             self.air_time += 1
+
+    def check_wall_slide(self):
+        """
+        Check if the player should be wall sliding and adjust velocity accordingly.
+        Returns:
+            bool: True if the player is wall sliding, False otherwise.
+        """
+        if (self.collisions["right"] or self.collisions["left"]) and self.air_time > 4:
+            self.velocity[1] = min(self.velocity[1], 0.5)  # Slow down vertical velocity
+            if self.collisions['right']:
+                self.flip = False
+            else:
+                self.flip = True
+            return True
+        return False
+
+    def jump(self):
+        """
+        Handle the player's jumping logic, including both wall jumps and regular jumps.
+        """
+        if self.wall_slide:  # Wall jump
+            self.air_time = 5
+            self.jumps = max(0, self.jumps - 1)
+            if self.flip and self.last_movement[0] < 0:  # Wall slide on the right
+                self.velocity[0] = 3
+                self.velocity[1] = -2.5
+            elif not self.flip and self.last_movement[0] > 0:  # Wall slide on the left
+                self.velocity[0] = -3
+                self.velocity[1] = -2.5
+        elif self.jumps > 0:  # Regular jump
+            self.velocity[1] = -3
+            self.jumps -= 1
+            self.air_time = 5
+
+    def dash(self): 
+        if not self.dashing:
+            if self.flip:
+                self.dashing = -60
+            else:
+                self.dashing = 60 
+        
 
     def update_action(self, movement=(0, 0)):
         """
@@ -189,7 +254,11 @@ class Player(PhysicsEntity):
         Args:
             movement (tuple): The movement input (x, y).
         """
-        if self.air_time > 4:
+        self.wall_slide = self.check_wall_slide()
+
+        if self.wall_slide:
+            self.set_action("wall_slide")
+        elif self.air_time > 4:
             self.set_action("jump")
         elif movement[0] != 0:
             self.set_action("run")
@@ -204,5 +273,5 @@ class Player(PhysicsEntity):
             movement (tuple): The movement input (x, y).
         """
         super().update(tilemap, movement=movement)
-        self.update_airtime()
+        self.update_aerial()
         self.update_action(movement)
