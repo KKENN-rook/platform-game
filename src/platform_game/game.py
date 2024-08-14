@@ -41,7 +41,7 @@ class Game:
         # Game Environment
         self.tilemap = Tilemap(self, tile_size=16)
         self.tilemap.load("map.json")
-        self.clouds = Clouds(self.assets["clouds"], count=16)
+        self.clouds = Clouds(self.assets["clouds"], count=12)
         self.leaf_spawners = []
         for tree in self.tilemap.extract([("large_decor", 2)], keep=True):
             self.leaf_spawners.append(pygame.Rect(4 + tree["pos"][0], 4 + tree["pos"][1], 23, 13))

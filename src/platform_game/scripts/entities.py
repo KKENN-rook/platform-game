@@ -1,4 +1,7 @@
 import pygame
+import math
+import random
+from scripts.particle import Particle
 
 
 class PhysicsEntity:
@@ -114,7 +117,15 @@ class PhysicsEntity:
             self.velocity[1] = 0
 
     def handle_dashing(self):
-        """Handle the dashing logic, updating dashing state and velocity."""
+        """Handle the dashing logic, updating dashing state, velocity, and particles"""
+        if abs(self.dashing) in {60, 50}:
+            for i in range(20):
+                angle = random.random() * (math.pi * 2)  # Random angle in radians from a circle
+                speed = random.random() * 0.5 + 0.5
+                pvelocity = [math.cos(angle) * speed, math.sin(angle) * speed]
+                self.game.particles.append(
+                    Particle(self.game, "particle", self.rect().center, velocity=pvelocity, frame=random.randint(0, 7))
+                )
         if self.dashing > 0:
             self.dashing = max(0, self.dashing - 1)
         elif self.dashing < 0:
@@ -125,6 +136,10 @@ class PhysicsEntity:
             # Apply a sudden deceleration after the initial burst
             if abs(self.dashing) == 51:
                 self.velocity[0] *= 0.1
+            pvelocity = [abs(self.dashing) / self.dashing * random.random() * 3, 0]
+            self.game.particles.append(
+                Particle(self.game, "particle", self.rect().center, velocity=pvelocity, frame=random.randint(0, 7))
+            )
 
     def update_vx(self):
         """ "Update the x-axis velocity, handling dashing and regular movement."""
@@ -282,3 +297,7 @@ class Player(PhysicsEntity):
         super().update(tilemap, movement=movement)
         self.update_aerial()
         self.update_action(movement)
+
+    def render(self, surf, offset=(0, 0)):
+        if abs(self.dashing) <= 50:
+            super().render(surf, offset=offset)

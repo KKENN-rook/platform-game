@@ -16,7 +16,6 @@ BORDERING_TILE_OFFSETS = [
 ]
 # Set of tile types that have physics applied (e.g., collision detection)
 PHYSICS_TILES = {"grass", "stone"}
-
 # If neighbors exist at position(key) use variant(value)
 AUTOTILE_MAP = {
     tuple(sorted([(1, 0), (0, 1)])): 0,  # If tile exists on the R and below, use variant 0
