@@ -251,13 +251,13 @@ class Player(PhysicsEntity):
             self.air_time = 5
             self.jumps = max(0, self.jumps - 1)
             if self.flip and self.last_movement[0] < 0:  # Wall slide on the right
-                self.velocity[0] = 3
-                self.velocity[1] = -2.5
+                self.velocity[0] = 2.5
+                self.velocity[1] = -2
             elif not self.flip and self.last_movement[0] > 0:  # Wall slide on the left
-                self.velocity[0] = -3
-                self.velocity[1] = -2.5
+                self.velocity[0] = -2.5
+                self.velocity[1] = -2
         elif self.jumps > 0:  # Regular jump
-            self.velocity[1] = -3
+            self.velocity[1] = -2.75
             self.jumps -= 1
             self.air_time = 5
 

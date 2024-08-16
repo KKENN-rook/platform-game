@@ -46,20 +46,6 @@ class Tilemap:
         self.tilemap = {}  # Grid tiles; keys represent location in world
         self.offgrid_tiles = []  # Non-interactable tiles
 
-        # Basic tile generation format
-        for i in range(10):
-            # Keys are strs b/c JSON does not support tuples
-            self.tilemap[str(i + 3) + ";10"] = {
-                "type": "grass",
-                "variant": 1,
-                "pos": (i + 3, 10),
-            }
-            self.tilemap["10;" + str(i + 5)] = {
-                "type": "stone",
-                "variant": 1,
-                "pos": (10, i + 5),
-            }
-
     def extract(self, id_pairs, keep=False):
         """
         Extracts tiles that match the given (type, variant) pairs from both 
