@@ -212,6 +212,7 @@ class Player(PhysicsEntity):
             size (tuple): Size of the player (w x h in pixels).
         """
         super().__init__(game, "player", pos, size)
+        self.spawn_pos = list(pos)  # Spawn may change if checkpoints are added
         self.air_time = 0
         self.jumps = 2
         self.wall_slide = False
@@ -287,6 +288,16 @@ class Player(PhysicsEntity):
         else:
             self.set_action("idle")
 
+    def respawn(self):
+        """
+        Respawn the player at the spawn position.
+        Resets the position, velocity, and airtime.
+        """
+        self.pos = self.spawn_pos.copy()
+        self.velocity = [0, 0] 
+        self.air_time = 0 
+        self.set_action("idle") 
+
     def update(self, tilemap, movement=(0, 0)):
         """
         Update the player's state, including position, collisions, airtime, and actions.
@@ -294,6 +305,10 @@ class Player(PhysicsEntity):
             tilemap (Tilemap): The tilemap for collision detection.
             movement (tuple): The movement input (x, y).
         """
+        # Check if respawn is needed 
+        if self.air_time > 180:
+            self.respawn()
+
         super().update(tilemap, movement=movement)
         self.update_aerial()
         self.update_action(movement)

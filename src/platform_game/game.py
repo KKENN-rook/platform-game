@@ -47,7 +47,7 @@ class Game:
             self.leaf_spawners.append(pygame.Rect(4 + tree["pos"][0], 4 + tree["pos"][1], 23, 13))
         self.particles = []
         # Player initialization
-        self.player = Player(self, (50, 50), (8, 15))
+        self.player = Player(self, (20, 50), (8, 15))
         self.movement = [False, False]  # [Left, Right]
         # Essentially tracks the game world coordinates, top-left corner of screen is cam pos [x, y].
         self.cam_pos = [0, 0]
