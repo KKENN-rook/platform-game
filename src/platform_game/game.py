@@ -20,7 +20,8 @@ class Game:
         self.screen = pygame.display.set_mode((640, 480))  # Game window
         self.clock = pygame.time.Clock()
         self.running = True
-        self.display = pygame.Surface((320, 240))  # Display to be upscaled
+        self.display = pygame.Surface((320, 240), pygame.SRCALPHA)  # Display that most objects are rendered on
+        self.display_2 = pygame.Surface((320, 240))  # Render objects that don't get outlined
         # Load game assets
         self.assets = {
             "decor": load_images("tiles/decor"),
@@ -116,9 +117,8 @@ class Game:
         Main game loop. Handles events, updates game state, and renders the game.
         """
         while self.running:
-
-            # Render BG
-            self.display.blit(self.assets["background"], (0, 0))
+            self.display.fill((0, 0, 0, 0))
+            self.display_2.blit(self.assets["background"], (0, 0))
 
             # Update cam pos
             self.update_cam()
@@ -131,17 +131,25 @@ class Game:
 
             # Render entities onto the display
             self.clouds.update()
-            self.clouds.render(self.display, offset=render_offset)
+            self.clouds.render(self.display_2, offset=render_offset)
             self.tilemap.render(self.display, offset=render_offset)
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
             self.player.render(self.display, offset=render_offset)
+
+            # Create black outline around objects in main display
+            display_mask = pygame.mask.from_surface(self.display)
+            display_sillhouette = display_mask.to_surface(setcolor=(0, 0, 0, 180), unsetcolor=(0, 0, 0, 0))
+            for offset in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                self.display_2.blit(display_sillhouette, offset)
+
             self.update_particles(render_offset)
 
             # Handle input
             self.handle_events()
 
             # Upscale the display and render it on the screen
-            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
+            self.display_2.blit(self.display, (0, 0))
+            self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), (0, 0))
 
             # Display the screen
             pygame.display.update()
