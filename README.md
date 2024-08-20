@@ -4,12 +4,12 @@
 <div align="center">
   <img src="repo_gifs/game_demo.gif" alt="Gameplay Preview" width="500"/>
 </div>
-This project is a 2D platformer game developed in Python using Pygame. I started it as a way to dive into object-oriented programming (OOP) as well as maybe learn a thing or two about game development. I thought that by coding a game engine from scratch, I'd be able to solidify these concepts much better than using a pre-existing one such as Unreal or Gamemaker.
+
+This project is a 2D platformer game developed in Python using Pygame. I started it as a way to dive into object-oriented programming (OOP) as well as maybe learn a thing or two about game development. I thought that by coding a game engine from scratch, I'd be able to solidify these concepts much better than using a pre-existing one such as Unreal or Gamemaker. 
 
 Right now, the project is more of a tech demo than a full-fledged game—there aren't any real game elements like levels or objectives yet. But underneath the hood, I've built out the core mechanics: physics, movement, animations, particles, and so on. 
 
 Although this ended up being more challenging and time-consuming than I expected, I feel that the whole experience taught me a lot, both about programming and about what goes in making a game. I'm really proud of the progress so far and hope to iterate upon it in the future. 
-
 
 ## Features
 ### 1. **Object-Oriented Design**
