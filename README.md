@@ -1,7 +1,7 @@
 
 # Platform Game Tech Demo 
 
-![Gameplay Preview](https://github.com/KKENN-rook/platform-game/repo_gifs/game_demo.gif)
+![Gameplay Preview](repo_gifs/game_demo.gif)
 
 This project is a 2D platformer game developed in Python using Pygame. I started it as a way to dive into object-oriented programming (OOP) as well as maybe learn a thing or two about game development. I thought that by coding a game engine from scratch, I'd be able to solidify these concepts much better than using a pre-existing one such as Unreal or Gamemaker.
 
@@ -37,7 +37,7 @@ Although this ended up being more challenging and time-consuming than I expected
    - The rendering system supports multiple layers, with separate surfaces for different game elements like the background, tiles, and entities.
 
 ### 7. **Level Editor**
-![Editor Preview](https://github.com/KKENN-rook/platform-game/repo_gifs/edit_demo.gif)
+![Editor Preview](repo_gifs/edit_demo.gif)
    - You can place, remove, and adjust tiles, designing custom levels from scratch or modifying existing ones.
    - Created levels can be saved as JSON files, which can then be loaded into the main game for playing.
 
