@@ -1,8 +1,9 @@
 
 # Platform Game Tech Demo 
 
-<img src="repo_gifs/game_demo.gif" alt="Gameplay Preview" width="500"/>
-
+<div align="center">
+  <img src="repo_gifs/game_demo.gif" alt="Gameplay Preview" width="400"/>
+</div>
 This project is a 2D platformer game developed in Python using Pygame. I started it as a way to dive into object-oriented programming (OOP) as well as maybe learn a thing or two about game development. I thought that by coding a game engine from scratch, I'd be able to solidify these concepts much better than using a pre-existing one such as Unreal or Gamemaker.
 
 Right now, the project is more of a tech demo than a full-fledged game—there aren't any real game elements like levels or objectives yet. But underneath the hood, I've built out the core mechanics: physics, movement, animations, particles, and so on. 
@@ -37,7 +38,9 @@ Although this ended up being more challenging and time-consuming than I expected
    - The rendering system supports multiple layers, with separate surfaces for different game elements like the background, tiles, and entities.
 
 ### 7. **Level Editor**
-<img src="repo_gifs/edit_demo.gif" alt="Editor Preview" width="500"/>
+<div align="center">
+  <img src="repo_gifs/edit_demo.gif" alt="Level Editor Preview" width="400"/>
+</div>
    - You can place, remove, and adjust tiles, designing custom levels from scratch or modifying existing ones.
    - Created levels can be saved as JSON files, which can then be loaded into the main game for playing.
 
