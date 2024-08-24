@@ -74,3 +74,4 @@ Although this ended up being more challenging and time-consuming than I expected
 - Implement game elements: Objective, Lives, Enemies. 
 - Implement Sound effects and music. 
 - Allow for multiple stages and stage transitions. 
+- Create an executable for the game for ease of launching. 
